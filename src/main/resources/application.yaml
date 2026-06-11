@@ -1,3 +1,53 @@
 spring:
   application:
     name: kafka-fraud-detection
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kafka_fraud_detection
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: fraud-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.zs.kafka_fraud_detection.*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.zs.kafka_fraud_detection.domain.FraudAlert
+    streams:
+      application-id: kafka-fraud-detection
+      bootstrap-servers: localhost:9092
+      properties:
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+
+server:
+  port: 8080
+
+app:
+  fraud:
+    high-value-threshold: 10000
+    frequency-limit: 5
+    frequency-window-seconds: 60
